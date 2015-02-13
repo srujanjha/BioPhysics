@@ -15,13 +15,14 @@ public class BioPhy {
 		String line="";
 		try{  
 		    FileInputStream fin=new FileInputStream(fileName);
-		    FileOutputStream fout=new FileOutputStream(location+file+"_atom.csv");
+		    FileOutputStream fout=new FileOutputStream(location+file+"_atom.pdb");
 		    FileOutputStream faout[]=new FileOutputStream[8];
-		    for(int j=0;j<8;j++)faout[j]=new FileOutputStream(location+file+"_"+j+".csv");
+		    for(int j=0;j<8;j++)faout[j]=new FileOutputStream(location+file+"_"+j+".pdb");
 		    int i=0,n=0,s=0,t=0;
 		    while((i=fin.read())!=-1){ 
 		    	line=""+(char)i;
 		    	while((i=fin.read())!='\n')line+=(char)i;
+		    	line+="\n";
 		    	if(line.startsWith("ORIGX"))
 		    	{
 		    		int xx=line.indexOf('.',0);
@@ -37,13 +38,11 @@ public class BioPhy {
             		sym[s][1]=Double.parseDouble(tempy);
             		sym[s][2]=Double.parseDouble(tempz);
             		s++;
-            		if(s==3)
-            		{
-            			for(int j=0;j<3;j++)
-            				{String s1="Origin"+j+","+sym[j][0]+","+sym[j][1]+","+sym[j][2]+"\n";
-              		  byte b[]=s1.getBytes();
-              		  fout.write(b); }
-            		}
+            		for(int j=0;j<8;j++)
+        			{
+        				byte b[]=line.getBytes();
+        				faout[j].write(b); 
+        			}
 		    	}
 		    	else if(line.startsWith("SCALE"))
 		    	{
@@ -60,13 +59,11 @@ public class BioPhy {
             		tra[t][1]=Double.parseDouble(tempy);
             		tra[t][2]=Double.parseDouble(tempz);
             		t++;
-            		if(t==3)
-            		{
-            			for(int j=0;j<3;j++)
-            				{String s1="Translate-"+j+","+tra[j][0]+","+tra[j][1]+","+tra[j][2]+"\n";
-              		  byte b[]=s1.getBytes();
-              		  fout.write(b); }
-            		}
+            		for(int j=0;j<8;j++)
+        			{
+        				byte b[]=line.getBytes();
+        				faout[j].write(b); 
+        			}
 		    	}
 		    	else if(line.startsWith("ATOM"))
             	{
@@ -77,7 +74,8 @@ public class BioPhy {
             		int yy=line.indexOf('.',xx+1);
             		int zz=line.indexOf('.',yy+1);
             		String tempx=line.substring(0,xx+4);
-            		tempx=tempx.substring(tempx.lastIndexOf(' ')+1);
+            		int f=tempx.lastIndexOf(' ')+1;
+            		tempx=tempx.substring(f);
             		String tempy=line.substring(xx+4,yy+4);
             		tempy=tempy.substring(tempy.lastIndexOf(' ')+1);
             		String tempz=line.substring(yy+4,zz+4);
@@ -86,21 +84,29 @@ public class BioPhy {
             		double y=Double.parseDouble(tempy);
             		double z=Double.parseDouble(tempz);
             		System.out.println(n+"\t"+atom+"\t"+x+"\t"+y+"\t"+z);
-            		String s1=atom+","+x+","+y+","+z+"\n";
+            		String s1=atom+"\t"+x+"\t"+y+"\t"+z+"\n";
             		byte b[]=s1.getBytes();
             		fout.write(b);
-            		for(int j=0;j<8;j++)
-            			{
+            		for(int j=1;j<8;j++)
+            		{
             			double x1=x*sym[0][0]+y*sym[0][1]+y*sym[0][2]+tra[0][0];
             			double y1=x*sym[1][0]+y*sym[1][1]+y*sym[1][2]+tra[1][1];
             			double z1=x*sym[2][0]+y*sym[2][1]+y*sym[2][2]+tra[2][2];
             			x=x1;y=y1;z=z1;
-            				s1=atom+","+x+","+y+","+z+"\n";
+            				s1=line.substring(0, f)+"\t"+String.format( "%.3f",x)+"\t"+String.format( "%.3f",y)+"\t"+String.format( "%.3f",z)+line.substring(zz+4);
             				b=s1.getBytes();
             				faout[j].write(b); 
-            			}
+            		}
+            		b=line.getBytes();
+    				faout[0].write(b); 
             		
             	}
+		    	else {for(int j=0;j<8;j++)
+    			{
+    				byte b[]=line.getBytes();
+    				faout[j].write(b); 
+    			}
+		    	}
 		    } 
   		    fout.close();  
 		    fin.close();  
