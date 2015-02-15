@@ -10,65 +10,50 @@ public class BioPhy {
 		System.out.print("Enter the PDB code and ensure that it is located in the above location: ");
 		String file=sc.nextLine();
 		String fileName=location+file+".pdb";
-		double sym[][]={{0,0,0},{0,0,0},{0,0,0}};
-		double tra[][]={{0,0,0},{0,0,0},{0,0,0}};
+		double sym[][][]=new double[9][3][3];
+		double tra[][]=new double[9][3];
 		String line="";
 		try{  
 		    FileInputStream fin=new FileInputStream(fileName);
 		    FileOutputStream fout=new FileOutputStream(location+file+"_atom.pdb");
-		    FileOutputStream faout[]=new FileOutputStream[8];
-		    for(int j=0;j<8;j++)faout[j]=new FileOutputStream(location+file+"_"+j+".pdb");
+		    FileOutputStream faout[]=new FileOutputStream[9];
+		    for(int j=0;j<9;j++)faout[j]=new FileOutputStream(location+file+"_"+j+".pdb");
 		    int i=0,n=0,s=0,t=0;
 		    while((i=fin.read())!=-1){ 
 		    	line=""+(char)i;
 		    	while((i=fin.read())!='\n')line+=(char)i;
 		    	line+="\n";
-		    	if(line.startsWith("ORIGX"))
+		    	if(line.contains("SMTRY"))
 		    	{
 		    		int xx=line.indexOf('.',0);
             		int yy=line.indexOf('.',xx+1);
             		int zz=line.indexOf('.',yy+1);
+            		int ww=line.indexOf('.',zz+1);
             		String tempx=line.substring(0,xx+7);
             		tempx=tempx.substring(tempx.lastIndexOf(' ')+1);
             		String tempy=line.substring(xx+7,yy+7);
             		tempy=tempy.substring(tempy.lastIndexOf(' ')+1);
             		String tempz=line.substring(yy+7,zz+7);
             		tempz=tempz.substring(tempz.lastIndexOf(' ')+1);
-            		sym[s][0]=Double.parseDouble(tempx);
-            		sym[s][1]=Double.parseDouble(tempy);
-            		sym[s][2]=Double.parseDouble(tempz);
-            		s++;
+            		String tempw=line.substring(zz+7,ww+6);
+            		tempw=tempw.substring(tempw.lastIndexOf(' ')+1);
+            		sym[s][t][0]=Double.parseDouble(tempx);
+            		sym[s][t][1]=Double.parseDouble(tempy);
+            		sym[s][t][2]=Double.parseDouble(tempz);
+            		tra[s][t]=Double.parseDouble(tempw);
+            		System.out.println(sym[s][t][0]+" "+sym[s][t][1]+" "+sym[s][t][2]+" "+tra[s][t]);
+            		if(t<2)t++;else {t=0;s++;}
+            		byte b[]=line.getBytes();
+    				fout.write(b); 
             		for(int j=0;j<8;j++)
         			{
-        				byte b[]=line.getBytes();
-        				faout[j].write(b); 
-        			}
-		    	}
-		    	else if(line.startsWith("SCALE"))
-		    	{
-		    		int xx=line.indexOf('.',0);
-            		int yy=line.indexOf('.',xx+1);
-            		int zz=line.indexOf('.',yy+1);
-            		String tempx=line.substring(0,xx+7);
-            		tempx=tempx.substring(tempx.lastIndexOf(' ')+1);
-            		String tempy=line.substring(xx+7,yy+7);
-            		tempy=tempy.substring(tempy.lastIndexOf(' ')+1);
-            		String tempz=line.substring(yy+7,zz+7);
-            		tempz=tempz.substring(tempz.lastIndexOf(' ')+1);
-            		tra[t][0]=Double.parseDouble(tempx);
-            		tra[t][1]=Double.parseDouble(tempy);
-            		tra[t][2]=Double.parseDouble(tempz);
-            		t++;
-            		for(int j=0;j<8;j++)
-        			{
-        				byte b[]=line.getBytes();
+        				b=line.getBytes();
         				faout[j].write(b); 
         			}
 		    	}
 		    	else if(line.startsWith("ATOM"))
             	{
-		    		n++;
-            		int l=line.length();
+		    		int l=line.length();
             		char atom=line.charAt(l-3);
             		int xx=line.indexOf('.',0);
             		int yy=line.indexOf('.',xx+1);
@@ -84,26 +69,34 @@ public class BioPhy {
             		double y=Double.parseDouble(tempy);
             		double z=Double.parseDouble(tempz);
             		System.out.println(n+"\t"+atom+"\t"+x+"\t"+y+"\t"+z);
-            		String s1=atom+"\t"+x+"\t"+y+"\t"+z+"\n";
-            		byte b[]=s1.getBytes();
-            		fout.write(b);
-            		for(int j=1;j<8;j++)
+            		String s1="";
+            		byte b[];
+            		for(int j=1;j<9;j++)
             		{
-            			double x1=x*sym[0][0]+y*sym[0][1]+y*sym[0][2]+tra[0][0];
-            			double y1=x*sym[1][0]+y*sym[1][1]+y*sym[1][2]+tra[1][1];
-            			double z1=x*sym[2][0]+y*sym[2][1]+y*sym[2][2]+tra[2][2];
-            			x=x1;y=y1;z=z1;
-            				s1=line.substring(0, f)+"\t"+String.format( "%.3f",x)+"\t"+String.format( "%.3f",y)+"\t"+String.format( "%.3f",z)+line.substring(zz+4);
-            				b=s1.getBytes();
-            				faout[j].write(b); 
+            			n++;
+            			double x1=x*sym[j][0][0]+y*sym[j][0][1]+z*sym[j][0][2]+tra[j][0];
+            			double y1=x*sym[j][1][0]+y*sym[j][1][1]+z*sym[j][1][2]+tra[j][1];
+            			double z1=x*sym[j][2][0]+y*sym[j][2][1]+z*sym[j][2][2]+tra[j][2];
+            			String sp1="",sp2="",sp3="";
+            			//x=x1;y=y1;z=z1;
+            			sp2=line.substring(11,f).trim();
+            			sp1=line.substring(0,f).trim();
+            			s1=sp1+String.format( "%12.3f",x1)+String.format( "%8.3f",y1)+String.format( "%8.3f",z1)+line.substring(zz+4);
+            			sp3="ATOM"+String.format("%7d",n)+"  "+sp2+String.format( "%12.3f",x1)+String.format( "%8.3f",y1)+String.format( "%8.3f",z1)+line.substring(zz+4);
+            			b=s1.getBytes();
+            			faout[j].write(b); 
+            			b=sp3.getBytes();
+            			fout.write(b);
             		}
             		b=line.getBytes();
     				faout[0].write(b); 
-            		
             	}
-		    	else {for(int j=0;j<8;j++)
+		    	else {
+		    		byte b[]=line.getBytes();
+    				fout.write(b); 
+    				for(int j=0;j<8;j++)
     			{
-    				byte b[]=line.getBytes();
+    					b=line.getBytes();
     				faout[j].write(b); 
     			}
 		    	}
