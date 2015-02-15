@@ -9,15 +9,17 @@ public class BioPhy {
 		String location=sc.nextLine();
 		System.out.print("Enter the PDB code and ensure that it is located in the above location: ");
 		String file=sc.nextLine();
+		System.out.print("Enter the number of SYMRTY Matrices in your PDB file:");
+		int no=sc.nextInt();
 		String fileName=location+file+".pdb";
-		double sym[][][]=new double[9][3][3];
-		double tra[][]=new double[9][3];
+		double sym[][][]=new double[no][3][3];
+		double tra[][]=new double[no][3];
 		String line="";
 		try{  
 		    FileInputStream fin=new FileInputStream(fileName);
 		    FileOutputStream fout=new FileOutputStream(location+file+"_atom.pdb");
-		    FileOutputStream faout[]=new FileOutputStream[9];
-		    for(int j=0;j<9;j++)faout[j]=new FileOutputStream(location+file+"_"+j+".pdb");
+		    FileOutputStream faout[]=new FileOutputStream[no];
+		    for(int j=0;j<no;j++)faout[j]=new FileOutputStream(location+file+"_"+j+".pdb");
 		    int i=0,n=0,s=0,t=0;
 		    while((i=fin.read())!=-1){ 
 		    	line=""+(char)i;
@@ -45,7 +47,7 @@ public class BioPhy {
             		if(t<2)t++;else {t=0;s++;}
             		byte b[]=line.getBytes();
     				fout.write(b); 
-            		for(int j=0;j<8;j++)
+            		for(int j=0;j<no;j++)
         			{
         				b=line.getBytes();
         				faout[j].write(b); 
@@ -71,7 +73,7 @@ public class BioPhy {
             		System.out.println(n+"\t"+atom+"\t"+x+"\t"+y+"\t"+z);
             		String s1="";
             		byte b[];
-            		for(int j=1;j<9;j++)
+            		for(int j=1;j<no;j++)
             		{
             			n++;
             			double x1=x*sym[j][0][0]+y*sym[j][0][1]+z*sym[j][0][2]+tra[j][0];
@@ -94,7 +96,7 @@ public class BioPhy {
 		    	else {
 		    		byte b[]=line.getBytes();
     				fout.write(b); 
-    				for(int j=0;j<8;j++)
+    				for(int j=0;j<no;j++)
     			{
     					b=line.getBytes();
     				faout[j].write(b); 
