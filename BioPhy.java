@@ -73,7 +73,7 @@ public class BioPhy {
             		System.out.println(n+"\t"+atom+"\t"+x+"\t"+y+"\t"+z);
             		String s1="";
             		byte b[];
-            		for(int j=1;j<no;j++)
+            		for(int j=0;j<no;j++)
             		{
             			n++;
             			double x1=x*sym[j][0][0]+y*sym[j][0][1]+z*sym[j][0][2]+tra[j][0];
